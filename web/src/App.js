@@ -1,143 +1,53 @@
 import React, { useState, useEffect } from "react";
+import api from "./services/api";
 
 import "./global.css";
 import "./App.css";
 import "./Sidebar.css";
 import "./Main.css";
 
+import DevItem from "./components/DevItem";
+import DevForm from "./components/DevForm";
+
 function App() {
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [devs, setDevs] = useState([]);
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
+    async function loadDevs() {
+      const response = await api.get("/devs");
 
-        setLatitude(latitude);
-        setLongitude(longitude);
-      },
-      err => {
-        console.log(err);
-      },
-      {
-        timeout: 30000
-      }
-    );
+      setDevs(response.data);
+    }
+    loadDevs();
   }, []);
+
+  async function handleAddDev(data) {
+    const response = await api.post("/devs", data);
+
+    setDevs([...devs, response.data]);
+  }
+
+  async function handleDelete(dev_id) {
+    await api.delete(`/devs/${dev_id}`);
+
+    setDevs(
+      devs.filter(dev => {
+        return dev._id !== dev_id;
+      })
+    );
+  }
 
   return (
     <div id="app">
       <aside>
         <strong>Cadastar</strong>
-        <form>
-          <div className="input-block">
-            <label htmlFor="github_username">Usuário do GitHub</label>
-            <input name="github_username" id="github_username" required />
-          </div>
-
-          <div className="input-block">
-            <label htmlFor="techs">Tecnologias</label>
-            <input name="techs" id="techs" required />
-          </div>
-
-          <div className="input-group">
-            <div className="input-block">
-              <label htmlFor="latitude">Latitude</label>
-              <input
-                type="number"
-                name="latitude"
-                id="latitude"
-                required
-                value={latitude}
-              />
-            </div>
-
-            <div className="input-block">
-              <label htmlFor="longitude">Longitude</label>
-              <input
-                type="number"
-                name="longitude"
-                id="longitude"
-                required
-                value={longitude}
-              />
-            </div>
-          </div>
-
-          <button type="submit">Cadastar</button>
-        </form>
+        <DevForm onSubmit={handleAddDev} />
       </aside>
       <main>
         <ul>
-          <li className="dev-item">
-            <header>
-              <img
-                src="https://avatars0.githubusercontent.com/u/2254731?s=460&v=4"
-                alt="d"
-              />
-              <div className="user-info">
-                <strong>Diego Fernandes</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>
-              CTO na @Rocketseat. Apaixonado pelas melhores tecnologias de
-              desenvolvimento web e mobile.
-            </p>
-            <a href="https://github.com/diego3g">Acessar Perfil no GitHub</a>
-          </li>
-          <li className="dev-item">
-            <header>
-              <img
-                src="https://avatars0.githubusercontent.com/u/2254731?s=460&v=4"
-                alt="d"
-              />
-              <div className="user-info">
-                <strong>Diego Fernandes</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>
-              CTO na @Rocketseat. Apaixonado pelas melhores tecnologias de
-              desenvolvimento web e mobile.
-            </p>
-            <a href="https://github.com/diego3g">Acessar Perfil no GitHub</a>
-          </li>
-          <li className="dev-item">
-            <header>
-              <img
-                src="https://avatars0.githubusercontent.com/u/2254731?s=460&v=4"
-                alt="d"
-              />
-              <div className="user-info">
-                <strong>Diego Fernandes</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>
-              CTO na @Rocketseat. Apaixonado pelas melhores tecnologias de
-              desenvolvimento web e mobile.
-            </p>
-            <a href="https://github.com/diego3g">Acessar Perfil no GitHub</a>
-          </li>
-          <li className="dev-item">
-            <header>
-              <img
-                src="https://avatars0.githubusercontent.com/u/2254731?s=460&v=4"
-                alt="d"
-              />
-              <div className="user-info">
-                <strong>Diego Fernandes</strong>
-                <span>ReactJS, React Native, NodeJS</span>
-              </div>
-            </header>
-            <p>
-              CTO na @Rocketseat. Apaixonado pelas melhores tecnologias de
-              desenvolvimento web e mobile.
-            </p>
-            <a href="https://github.com/diego3g">Acessar Perfil no GitHub</a>
-          </li>
+          {devs.map(dev => (
+            <DevItem key={dev._id} dev={dev} handleDelete={handleDelete} />
+          ))}
         </ul>
       </main>
     </div>

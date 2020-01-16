@@ -65,7 +65,9 @@ module.exports = {
     let dev = await Dev.findById({ _id });
 
     if (dev) {
-      dev = await Dev.deleteMany({});
+      dev = await Dev.deleteMany({
+        _id
+      });
     }
 
     return res.json(dev);
